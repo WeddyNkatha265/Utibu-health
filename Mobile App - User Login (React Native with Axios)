@@ -1,0 +1,41 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const LoginScreen = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post('/api/login', { username, password });
+      // Handle successful login and store user information
+      console.log('Login successful!', response.data);
+    } catch (error) {
+      // Handle login failure and display error message
+      console.error('Login failed:', error.response.data);
+    }
+  };
+
+  return (
+    <div>
+      {/* Username input field */}
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+      />
+      {/* Password input field */}
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+      />
+      {/* Login button */}
+      <button onPress={handleLogin}>Login</button>
+    </div>
+  );
+};
+
+export default LoginScreen;
