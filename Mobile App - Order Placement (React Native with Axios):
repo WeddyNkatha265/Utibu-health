@@ -1,0 +1,40 @@
+
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const OrderScreen = ({ medication, userToken }) => {
+  const [quantity, setQuantity] = useState(1);
+
+  const handleOrderPlacement = async () => {
+    try {
+      const response = await axios.post(
+        '/api/orders',
+        { medicationId: medication.id, quantity },
+        { headers: { Authorization: `Bearer ${userToken}` } }
+      );
+      console.log('Order placed successfully!', response.data);
+      // Handle successful order placement and inform user
+    } catch (error) {
+      console.error('Order placement failed:', error.response.data);
+      // Handle order placement failure and display error message
+    }
+  };
+
+  return (
+    <div>
+      {/* Medication details display */}
+      <p>Medication Name: {medication.name}</p>
+      {/* Quantity selection */}
+      <input
+        type="number"
+        min={1}
+        value={quantity}
+        onChangeText={setQuantity}
+      />
+      {/* Order placement button */}
+      <button onPress={handleOrderPlacement}>Place Order</button>
+    </div>
+  );
+};
+
+export default OrderScreen;
