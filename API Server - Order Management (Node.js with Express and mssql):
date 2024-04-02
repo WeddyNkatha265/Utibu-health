@@ -1,0 +1,60 @@
+const express = require('express');
+const mssql = require('mssql');
+
+const app = express();
+
+const pool = new mssql.ConnectionPool({
+  // ... your SQL Server connection details
+});
+
+app.post('/api/orders', async (req, res) => {
+  const { medicationId, quantity } = req.body;
+  const userToken = req.headers.authorization?.split(' ')[1]; // Extract token from Authorization header
+
+  try {
+    await pool.connect();
+
+    // Check user authentication (implement your token validation logic here)
+    if (!isValidUserToken(userToken)) {
+      return res.status(401).send('Unauthorized');
+    }
+
+    // Check medication stock availability
+    const stockResult = await pool
+      .request()
+      .query('SELECT StockLevel FROM Medications WHERE id = @medicationId', {
+        medicationId,
+      });
+
+    if (stockResult.recordset[0].StockLevel < quantity) {
+      return res.status(400).send('Insufficient stock for this medication');
+    }
+
+    // Place order in the database
+    await pool
+      .request()
+      .query(
+        'INSERT INTO Orders (MedicationId, Quantity, UserId) VALUES (@medicationId, @quantity, @userId)',
+        { medicationId, quantity, userId: /* extract user ID from token */ } // Extract user ID from token for order association
+      );
+
+    res.json({ message: 'Order placed successfully!' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error placing order');
+  } finally {
+    await pool.close();
+  }
+});
+
+// ... other API endpoints
+
+function isValidUserToken(token) {
+  // Implement your token validation logic here (e.g., verify token with a secure mechanism)
+  // Replace this placeholder with your actual token validation logic
+  return token === 'your_placeholder_valid_token'; // Replace with actual validation
+}
+
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
