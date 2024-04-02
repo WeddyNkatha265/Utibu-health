@@ -1,0 +1,30 @@
+const express = require('express');
+const mssql = require('mssql');
+
+const app = express();
+
+const pool = new mssql.ConnectionPool({
+  user: 'your_username', // Replace with your SQL Server username
+  password: 'your_password', // Replace with your SQL Server password
+  server: 'your_server_name', // Replace with your SQL Server hostname or IP
+  database: 'your_database_name', // Replace with your database name
+});
+
+app.get('/api/medications', async (req, res) => {
+  try {
+    await pool.connect();
+    const result = await pool.request().query('SELECT * FROM Medications');
+    res.json(result.recordset);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error retrieving medications');
+  } finally {
+    await pool.close();
+  }
+});
+
+// ... other API endpoints for order management, payment handling, etc.
+
+app.listen(3000, () => {
+  console.log('Server listening on port 3000');
+});
